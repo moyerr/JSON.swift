@@ -4,19 +4,18 @@ import XCTest
 class JSONTests: XCTestCase {
     
     // MARK: - Internal types
-    private struct Pet: Codable, Equatable {
-        let animal: String
-        let name: String
+    private struct SubObject: Codable, Equatable {
+        let anotherString: String
+        let anotherInt: Int
     }
     
-    private struct Person: Codable, Equatable {
-        let firstName: String
-        let middleName: String?
-        let lastName: String
-        let age: Int
-        let weight: Double
-        let employed: Bool
-        let pets: [Pet]
+    private struct SomeObject: Codable, Equatable {
+        let someString: String
+        let someOptional: String?
+        let someInt: Int
+        let someDouble: Double
+        let someBool: Bool
+        let someArray: [SubObject]
     }
 
     // MARK: - Setup & Teardown
@@ -81,236 +80,223 @@ class JSONTests: XCTestCase {
     }
     
     func testLiterals() {
-        let person: JSON = .object([
-            "firstName": .string("Robbie"),
-            "middleName": .optional(nil),
-            "lastName": .string("Moyer"),
-            "age": .int(29),
-            "weight": .double(162.4),
-            "employed": true,
-            "pets": .array([
+        let json: JSON = .object([
+            "someString": .string("Hello"),
+            "someOptional": .optional(nil),
+            "someInt": .int(257),
+            "someDouble": .double(162.4),
+            "someBool": true,
+            "someArray": .array([
                 .object([
-                    "animal": .string("Rabbit"),
-                    "name": .string("Benjamin")
+                    "anotherString": .string("World"),
+                    "anotherInt": .int(345)
                     ])
                 ])
             ])
         
-        let literalPerson: JSON = [
-            "firstName": "Robbie",
-            "middleName": nil,
-            "lastName": "Moyer",
-            "age": 29,
-            "weight": 162.4,
-            "employed": true,
-            "pets": [
+        let jsonViaLiterals: JSON = [
+            "someString": "Hello",
+            "someOptional": nil,
+            "someInt": 257,
+            "someDouble": 162.4,
+            "someBool": true,
+            "someArray": [
                 [
-                    "animal": "Rabbit",
-                    "name": "Benjamin"
+                    "anotherString": "World",
+                    "anotherInt": 345
                 ]
             ]
         ]
         
-        XCTAssertEqual(person, literalPerson)
+        XCTAssertEqual(json, jsonViaLiterals)
     }
     
     func testEncode() {
-        let person: JSON = [
-            "firstName": "Robbie",
-            "middleName": nil,
-            "lastName": "Moyer",
-            "age": 29,
-            "weight": 162.4,
-            "employed": true,
-            "pets": [
+        let json: JSON = [
+            "someString": "Hello",
+            "someOptional": nil,
+            "someInt": 257,
+            "someDouble": 162.4,
+            "someBool": true,
+            "someArray": [
                 [
-                    "animal": "Rabbit",
-                    "name": "Benjamin"
+                    "anotherString": "World",
+                    "anotherInt": 345
                 ]
             ]
         ]
         
-        let encodedPerson = try? JSONEncoder().encode(person)
+        let encodedPerson = try? JSONEncoder().encode(json)
         
         XCTAssertNotNil(encodedPerson)
     }
     
     func testDecode() {
-        let person = """
+        let jsonString = """
         {
-            "age" : 29,
-            "weight": 162.4,
-            "firstName" : "Robbie",
-            "lastName" : "Moyer",
-            "middleName": null,
-            "employed" : true,
-            "pets" : [
+            "someString": "Hello",
+            "someOptional": null,
+            "someInt": 257,
+            "someDouble": 162.4,
+            "someBool": true,
+            "someArray": [
                 {
-                    "name" : "Benjamin",
-                    "animal" : "Rabbit"
+                    "anotherString": "World",
+                    "anotherInt": 345
                 }
             ]
         }
         """
         
-        let data = person.data(using: .utf8)
+        let data = jsonString.data(using: .utf8)
         
         XCTAssertNotNil(data)
         
-        let decodedPerson = try? JSONDecoder().decode(JSON.self, from: data!)
+        let decodedJson = try? JSONDecoder().decode(JSON.self, from: data!)
         
-        XCTAssertNotNil(decodedPerson)
+        XCTAssertNotNil(decodedJson)
         
-        let otherPerson: JSON = [
-            "firstName": "Robbie",
-            "middleName": nil,
-            "lastName": "Moyer",
-            "age": 29,
-            "weight": 162.4,
-            "employed": true,
-            "pets": [
+        let json: JSON = [
+            "someString": "Hello",
+            "someOptional": nil,
+            "someInt": 257,
+            "someDouble": 162.4,
+            "someBool": true,
+            "someArray": [
                 [
-                    "animal": "Rabbit",
-                    "name": "Benjamin"
+                    "anotherString": "World",
+                    "anotherInt": 345
                 ]
             ]
         ]
         
-        XCTAssertEqual(decodedPerson!, otherPerson)
+        XCTAssertEqual(decodedJson!, json)
     }
     
     func testSubscripts() {
-        let person: JSON = [
-            "firstName": "Robbie",
-            "middleName": nil,
-            "lastName": "Moyer",
-            "age": 29,
-            "weight": 162.4,
-            "employed": true,
-            "pets": [
+        let json: JSON = [
+            "someString": "Hello",
+            "someOptional": nil,
+            "someInt": 257,
+            "someDouble": 162.4,
+            "someBool": true,
+            "someArray": [
                 [
-                    "animal": "Rabbit",
-                    "name": "Benjamin"
+                    "anotherString": "World",
+                    "anotherInt": 345
                 ]
             ]
         ]
         
-        let wrapped: JSON = ["person": person]
+        let wrapped: JSON = ["item": json]
         
-        let bennyDynamic = wrapped.person?.pets?[0]?.name
-        let bennySubscript = wrapped["person"]?["pets"]?[0]?["name"]
+        let itemFromDynamicLookup = wrapped.item?.someArray?[0]?.anotherString
+        let itemFromSubscript = wrapped["item"]?["someArray"]?[0]?["anotherString"]
         
-        XCTAssertNotNil(bennyDynamic)
-        XCTAssertNotNil(bennySubscript)
-        XCTAssertEqual(bennyDynamic, .string("Benjamin"))
-        XCTAssertEqual(bennySubscript, .string("Benjamin"))
+        XCTAssertNotNil(itemFromDynamicLookup)
+        XCTAssertNotNil(itemFromSubscript)
+        XCTAssertEqual(itemFromDynamicLookup, .string("World"))
+        XCTAssertEqual(itemFromSubscript, .string("World"))
         
-        let invalidDynamic = wrapped.person?.address?.city
-        let invalidSubscript = wrapped["person"]?["address"]?["city"]
+        let invalidDynamic = wrapped.json?.nonExistentMember?.someString
+        let invalidSubscript = wrapped["json"]?["nonExistentMember"]?["someString"]
         
         XCTAssertNil(invalidDynamic)
         XCTAssertNil(invalidSubscript)
     }
     
     func testCodableConversions() {
-        let personJSON: JSON = [
-            "firstName": "Robbie",
-            "middleName": nil,
-            "lastName": "Moyer",
-            "age": 29,
-            "weight": 162.4,
-            "employed": true,
-            "pets": [
+        let objectJson: JSON = [
+            "someString": "Hello",
+            "someOptional": nil,
+            "someInt": 257,
+            "someDouble": 162.4,
+            "someBool": true,
+            "someArray": [
                 [
-                    "animal": "Rabbit",
-                    "name": "Benjamin"
+                    "anotherString": "World",
+                    "anotherInt": 345
                 ]
             ]
         ]
         
-        let personObject = Person(
-            firstName: "Robbie",
-            middleName: nil,
-            lastName: "Moyer",
-            age: 29,
-            weight: 162.4,
-            employed: true,
-            pets: [
-                Pet(animal: "Rabbit", name: "Benjamin")
+        let object = SomeObject(
+            someString: "Hello",
+            someOptional: nil,
+            someInt: 257,
+            someDouble: 162.4,
+            someBool: true,
+            someArray: [
+                SubObject(anotherString: "World", anotherInt: 345)
             ]
         )
         
-        let jsonConverted = Person(from: personJSON)
-        let objectConverted = JSON(from: personObject)
+        let jsonConverted = SomeObject(from: objectJson)
+        let objectConverted = JSON(from: object)
         
         XCTAssertNotNil(jsonConverted)
         XCTAssertNotNil(objectConverted)
         
-        XCTAssertEqual(jsonConverted!, personObject)
+        XCTAssertEqual(jsonConverted!, object)
         
         // We can't really test the JSON to JSON equality because swift's
         // default encode implementation ignores nil values, so our
-        // object -> JSON conversion will be missing "middleName".
+        // object -> JSON conversion will be missing "someOptional".
     }
     
     func testGetValue() {
-        let person: JSON = [
-            "firstName": "Robbie",
-            "middleName": nil,
-            "lastName": "Moyer",
-            "age": 29,
-            "weight": 162.4,
-            "employed": true,
-            "pets": [
+        let json: JSON = [
+            "someString": "Hello",
+            "someOptional": nil,
+            "someInt": 257,
+            "someDouble": 162.4,
+            "someBool": true,
+            "someArray": [
                 [
-                    "animal": "Rabbit",
-                    "name": "Benjamin"
+                    "anotherString": "World",
+                    "anotherInt": 345
                 ]
             ]
         ]
         
-        let firstName: String? = person.firstName?.getValue()
-        let middleName: JSON?? = person.middleName?.getValue()
-        let age: Int? = person.age?.getValue()
-        let weight: Double? = person.weight?.getValue()
-        let employed: Bool? = person.employed?.getValue()
-        let pets: [JSON]? = person.pets?.getValue()
-        let benny: [String: JSON]? = person.pets?[0]?.getValue()
+        let string: String? = json.someString?.getValue()
+        let optional: JSON?? = json.someOptional?.getValue()
+        let int: Int? = json.someInt?.getValue()
+        let double: Double? = json.someDouble?.getValue()
+        let bool: Bool? = json.someBool?.getValue()
+        let array: [JSON]? = json.someArray?.getValue()
         
-        XCTAssertNotNil(firstName)
-        XCTAssertNotNil(middleName)
-        XCTAssertNotNil(age)
-        XCTAssertNotNil(weight)
-        XCTAssertNotNil(employed)
-        XCTAssertNotNil(pets)
-        XCTAssertNotNil(benny)
+        XCTAssertNotNil(string)
+        XCTAssertNotNil(optional)
+        XCTAssertNotNil(int)
+        XCTAssertNotNil(double)
+        XCTAssertNotNil(bool)
+        XCTAssertNotNil(array)
         
-        XCTAssertEqual(firstName!, "Robbie")
-        XCTAssertEqual(middleName!, nil)
-        XCTAssertEqual(age!, 29)
-        XCTAssertEqual(weight!, 162.4)
-        XCTAssertEqual(employed!, true)
-        XCTAssertEqual(pets!, [.object(["animal": "Rabbit", "name": "Benjamin"])])
-        XCTAssertEqual(benny!, ["animal": "Rabbit", "name": "Benjamin"])
+        XCTAssertEqual(string!, "Hello")
+        XCTAssertEqual(optional!, nil)
+        XCTAssertEqual(int!, 257)
+        XCTAssertEqual(double!, 162.4)
+        XCTAssertEqual(bool!, true)
+        XCTAssertEqual(array!, [.object(["anotherString": "World", "anotherInt": 345])])
     }
     
     func testToString() {
-        let person: JSON = [
-            "firstName": "Robbie",
-            "middleName": nil,
-            "lastName": "Moyer",
-            "age": 29,
-            "weight": 162.4,
-            "employed": true,
-            "pets": [
+        let json: JSON = [
+            "someString": "Hello",
+            "someOptional": nil,
+            "someInt": 257,
+            "someDouble": 162.4,
+            "someBool": true,
+            "someArray": [
                 [
-                    "animal": "Rabbit",
-                    "name": "Benjamin"
+                    "anotherString": "World",
+                    "anotherInt": 345
                 ]
             ]
         ]
         
-        let string = person.string
+        let string = json.string
         let data = string.data(using: .utf8)
         
         XCTAssertNotNil(data)
@@ -318,23 +304,23 @@ class JSONTests: XCTestCase {
         let decoded = try? JSONDecoder().decode(JSON.self, from: data!)
         
         XCTAssertNotNil(decoded)
-        XCTAssertEqual(person, decoded!)
+        XCTAssertEqual(json, decoded!)
     }
     
     func testDataConversions() {
         let goodData = """
         {
-            "item": {
-                "user": {
-                    "email": "robbie@ad60.com",
-                    "password": "Testing123?"
+            "someString": "Hello",
+            "someOptional": null,
+            "someInt": 257,
+            "someDouble": 162.4,
+            "someBool": true,
+            "someArray": [
+                {
+                    "anotherString": "World",
+                    "anotherInt": 345
                 }
-            },
-            "metaData": {
-                "someData": "Hello",
-                "someBool": true,
-                "someInt": 23
-            }
+            ]
         }
         """.data(using: .utf8)
         
@@ -356,23 +342,22 @@ class JSONTests: XCTestCase {
 
     // MARK: - Performance Tests
     func testManualStringGeneration() {
-        let person: JSON = [
-            "firstName": "Robbie",
-            "middleName": nil,
-            "lastName": "Moyer",
-            "age": 29,
-            "weight": 162.4,
-            "employed": true,
-            "pets": [
+        let json: JSON = [
+            "someString": "Hello",
+            "someOptional": nil,
+            "someInt": 257,
+            "someDouble": 162.4,
+            "someBool": true,
+            "someArray": [
                 [
-                    "animal": "Rabbit",
-                    "name": "Benjamin"
+                    "anotherString": "World",
+                    "anotherInt": 345
                 ]
             ]
         ]
         
         self.measure {
-            let string = person.string
+            let string = json.string
         }
     }
     
@@ -386,23 +371,22 @@ class JSONTests: XCTestCase {
         // faster and has the benefit of returning a String rather than an
         // optional String.
         
-        let person: JSON = [
-            "firstName": "Robbie",
-            "middleName": nil,
-            "lastName": "Moyer",
-            "age": 29,
-            "weight": 162.4,
-            "employed": true,
-            "pets": [
+        let json: JSON = [
+            "someString": "Hello",
+            "someOptional": nil,
+            "someInt": 257,
+            "someDouble": 162.4,
+            "someBool": true,
+            "someArray": [
                 [
-                    "animal": "Rabbit",
-                    "name": "Benjamin"
+                    "anotherString": "World",
+                    "anotherInt": 345
                 ]
             ]
         ]
         
         self.measure {
-            let string = String(data: person.data, encoding: .utf8)
+            let string = String(data: json.data, encoding: .utf8)
         }
     }
 
