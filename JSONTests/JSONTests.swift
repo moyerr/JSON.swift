@@ -1,11 +1,3 @@
-//
-//  JSONTests.swift
-//  JSONTests
-//
-//  Created by Robbie Moyer on 12/13/18.
-//  Copyright © 2018 RoJoMo Studios. All rights reserved.
-//
-
 import XCTest
 @testable import JSON
 
